@@ -21,11 +21,24 @@
         <div>
           <h2 class="text-xl font-semibold mb-2">Your Info</h2>
           <input type="text" placeholder="Your Name or Business" class="w-full border p-2 mb-2" id="senderName" />
-          <input type="text" placeholder="Your Address" class="w-full border p-2 mb-2" id="senderAddress" />
+          <input type="text" placeholder="Street Address" class="w-full border p-2 mb-2" id="senderStreet" />
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <input type="text" placeholder="City" class="border p-2" id="senderCity" />
+            <input type="text" placeholder="State/Region" class="border p-2" id="senderState" />
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <input type="text" placeholder="Postal Code" class="border p-2" id="senderZip" />
+            <input type="text" placeholder="Country" class="border p-2" id="senderCountry" />
+          </div>
           <input type="text" placeholder="Phone" class="w-full border p-2 mb-2" id="senderPhone" />
           <input type="email" placeholder="Email" class="w-full border p-2 mb-2" id="senderEmail" />
           <input type="text" placeholder="VAT Number" class="w-full border p-2" id="senderVAT" />
         </div>
+        <div>
+          <h2 class="text-xl font-semibold mb-2">Logo</h2>
+          <input type="file" accept="image/*" id="logoInput" class="w-full border p-2" />
+          <p id="logoSizeInfo" class="text-sm mt-1 text-gray-500">Max file size: 2 MB</p>
+        </div>        
 
         <!-- Client Info -->
         <div>
@@ -34,12 +47,22 @@
           <input type="text" placeholder="Client Address" class="w-full border p-2" id="clientAddress" />
         </div>
         
-        <!-- Invoice Meta -->
+        <!-- Invoice Details -->
         <div>
           <h2 class="text-xl font-semibold mb-2">Invoice Details</h2>
           <input type="text" placeholder="Invoice Number" class="w-full border p-2 mb-2" id="invoiceNumber" />
-          <input type="date" class="w-full border p-2 mb-2" id="invoiceDate" />
-          <input type="date" class="w-full border p-2" id="dueDate" />
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-sm font-medium">Invoice Date</label>
+              <input type="date" class="w-full border p-2" id="invoiceDate" />
+            </div>
+            <div>
+              <label class="text-sm font-medium">Due Date</label>
+              <input type="date" class="w-full border p-2 mb-1" id="dueDate" />
+              <div class="text-sm text-gray-500">or enter payment terms</div>
+              <input type="number" placeholder="e.g. 14 (days)" class="w-full border p-2 mt-1" id="paymentTerms" />
+            </div>
+          </div>
         </div>
 
         <!-- Itemized Products/Services -->

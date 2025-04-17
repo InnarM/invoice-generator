@@ -1,5 +1,14 @@
 // ====== INPUT ELEMENTS ======
 
+// Extended address + due date logic
+const senderStreetInput = document.getElementById("senderStreet");
+const senderCityInput = document.getElementById("senderCity");
+const senderStateInput = document.getElementById("senderState");
+const senderZipInput = document.getElementById("senderZip");
+const senderCountryInput = document.getElementById("senderCountry");
+const paymentTermsInput = document.getElementById("paymentTerms");
+
+
 // Sender (your) info
 const senderNameInput = document.getElementById("senderName");
 const senderAddressInput = document.getElementById("senderAddress");
@@ -7,6 +16,9 @@ const senderPhoneInput = document.getElementById("senderPhone");
 const senderEmailInput = document.getElementById("senderEmail");
 const senderVATInput = document.getElementById("senderVAT");
 const vatRateInput = document.getElementById("vatRate");
+const logoInput = document.getElementById("logoInput");
+let logoDataUrl = ""; // Holds the uploaded logo image
+
 
 // Client info & invoice metadata
 const clientNameInput = document.getElementById("clientName");
@@ -22,13 +34,56 @@ const invoicePreview = document.getElementById("invoicePreview");
 
 // Attach input listeners to all fields that affect the preview
 [
-  senderNameInput, senderAddressInput, senderPhoneInput, senderEmailInput, senderVATInput,
+  senderNameInput, senderStreetInput, senderCityInput, senderStateInput,
+  senderZipInput, senderCountryInput,
+  senderPhoneInput, senderEmailInput, senderVATInput,
   clientNameInput, clientAddressInput,
-  invoiceNumberInput, invoiceDateInput, dueDateInput,
+  invoiceNumberInput, invoiceDateInput, dueDateInput, paymentTermsInput,
   vatRateInput
 ].forEach(input => {
   input.addEventListener("input", updatePreview);
 });
+
+const logoSizeInfo = document.getElementById("logoSizeInfo");
+
+logoInput.addEventListener("change", function () {
+  const file = logoInput.files[0];
+  if (!logoSizeInfo) return;
+
+  if (file) {
+    const maxSizeKB = 2048; // 2MB
+    const fileSizeKB = file.size / 1024;
+    const formattedSize = fileSizeKB.toFixed(1);
+
+    logoSizeInfo.textContent = `Selected file: ${formattedSize} KB (Max: ${maxSizeKB} KB)`;
+
+    if (fileSizeKB > maxSizeKB) {
+      logoSizeInfo.textContent += " – Too large!";
+      logoSizeInfo.classList.remove("text-gray-500");
+      logoSizeInfo.classList.add("text-red-600", "font-semibold");
+      logoInput.value = "";
+      logoDataUrl = "";
+      updatePreview();
+      return;
+    }
+
+    logoSizeInfo.classList.remove("text-red-600", "font-semibold");
+    logoSizeInfo.classList.add("text-gray-500");
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      logoDataUrl = e.target.result;
+      updatePreview();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    logoSizeInfo.textContent = "Max file size: 2 MB";
+    logoDataUrl = "";
+    updatePreview();
+  }
+});
+
+
 
 // ====== MAIN RENDER FUNCTION ======
 
@@ -75,7 +130,13 @@ function updatePreview() {
       <div>
         <h1 class="text-2xl font-bold mb-2">INVOICE</h1>
         <p class="font-semibold">${senderNameInput.value || "Your Name / Company"}</p>
-        <p>${senderAddressInput.value || "Your Address"}</p>
+        <p>
+          ${senderStreetInput.value || "Street Address"}, 
+          ${senderCityInput.value || "City"}, 
+          ${senderStateInput.value || "State"}, 
+          ${senderZipInput.value || "ZIP"}, 
+          ${senderCountryInput.value || "Country"}
+        </p>
         <p>${senderEmailInput.value || "Email"}</p>
         <p>${senderPhoneInput.value || "Phone"}</p>
         <p>${senderVATInput.value || ""}</p>
@@ -83,12 +144,36 @@ function updatePreview() {
 
       <!-- Right: Logo placeholder + invoice info -->
       <div class="text-right space-y-2">
-        <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto">
-          <span class="block text-center pt-6 text-sm text-gray-500">Logo</span>
-        </div>
+      ${logoDataUrl
+        ? `
+          <div class="w-[100px] h-[100px] bg-white border border-gray-300 rounded p-1 mx-auto">
+            <img src="${logoDataUrl}" alt="Logo" class="w-full h-full object-contain" />
+          </div>
+        `
+        : `
+          <div class="w-[100px] h-[100px] bg-gray-200 rounded mx-auto flex items-center justify-center text-gray-500 text-sm">
+            Logo
+          </div>
+        `
+      }      
+      
         <p><strong>Invoice #:</strong> ${invoiceNumberInput.value || "0001"}</p>
         <p><strong>Invoice Date:</strong> ${invoiceDateInput.value || new Date().toISOString().split('T')[0]}</p>
-        <p><strong>Due Date:</strong> ${dueDateInput.value || "—"}</p>
+        ${(() => {
+          const invoiceDate = new Date(invoiceDateInput.value);
+          const terms = parseInt(paymentTermsInput.value);
+          let finalDue = dueDateInput.value;
+        
+          // If dueDate is not manually set but payment terms are entered
+          if (!finalDue && !isNaN(terms) && invoiceDate.toString() !== "Invalid Date") {
+            const dueDate = new Date(invoiceDate);
+            dueDate.setDate(invoiceDate.getDate() + terms);
+            finalDue = dueDate.toISOString().split("T")[0];
+          }
+        
+          return `<p><strong>Due Date:</strong> ${finalDue || "—"}</p>`;
+        })()}
+        
       </div>
     </div>
 
