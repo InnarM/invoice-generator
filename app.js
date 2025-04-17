@@ -242,13 +242,20 @@ addItemRow();
 const downloadBtn = document.getElementById("downloadBtn");
 
 downloadBtn.addEventListener("click", () => {
+  // Clone the invoice preview to avoid layout/render issues
+  const clone = invoicePreview.cloneNode(true);
+
   const opt = {
     margin: 0.5,
     filename: `invoice-${invoiceNumberInput.value || "draft"}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true, // supports loading local images or data URLs
+    },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().from(invoicePreview).set(opt).save();
+  html2pdf().set(opt).from(clone).save();
 });
+
