@@ -1,31 +1,43 @@
-// Sender info inputs
+// ====== INPUT ELEMENTS ======
+
+// Sender (your) info
 const senderNameInput = document.getElementById("senderName");
 const senderAddressInput = document.getElementById("senderAddress");
 const senderPhoneInput = document.getElementById("senderPhone");
 const senderEmailInput = document.getElementById("senderEmail");
+const senderVATInput = document.getElementById("senderVAT");
 const vatRateInput = document.getElementById("vatRate");
 
-
-// Client and invoice details
+// Client info & invoice metadata
 const clientNameInput = document.getElementById("clientName");
 const clientAddressInput = document.getElementById("clientAddress");
 const invoiceNumberInput = document.getElementById("invoiceNumber");
 const invoiceDateInput = document.getElementById("invoiceDate");
+const dueDateInput = document.getElementById("dueDate");
 
-// Preview container
+// Invoice preview output area
 const invoicePreview = document.getElementById("invoicePreview");
 
-// Add these to the top where you set event listeners:
-[senderNameInput, senderAddressInput, senderPhoneInput, senderEmailInput,
- clientNameInput, clientAddressInput, invoiceNumberInput, invoiceDateInput, vatRateInput].forEach(input => {
+// ====== LIVE EVENT BINDINGS ======
+
+// Attach input listeners to all fields that affect the preview
+[
+  senderNameInput, senderAddressInput, senderPhoneInput, senderEmailInput, senderVATInput,
+  clientNameInput, clientAddressInput,
+  invoiceNumberInput, invoiceDateInput, dueDateInput,
+  vatRateInput
+].forEach(input => {
   input.addEventListener("input", updatePreview);
 });
+
+// ====== MAIN RENDER FUNCTION ======
 
 function updatePreview() {
   let itemsHTML = "";
   let grandTotal = 0;
   let totalWeight = 0;
 
+  // Loop through all item rows and extract input values
   const itemRows = itemsContainer.querySelectorAll("div");
   itemRows.forEach(row => {
     const inputs = row.querySelectorAll("input");
@@ -38,6 +50,7 @@ function updatePreview() {
     grandTotal += lineTotal;
     totalWeight += weight;
 
+    // Add this item to the preview table HTML
     itemsHTML += `
       <tr class="border-b">
         <td class="p-1">${desc}</td>
@@ -49,32 +62,37 @@ function updatePreview() {
     `;
   });
 
-  // ✅ Now calculate VAT after all items are summed
+  // VAT calculations
   const vatRate = parseFloat(vatRateInput.value) || 0;
   const vatAmount = (grandTotal * vatRate) / 100;
   const totalWithVAT = grandTotal + vatAmount;
 
+  // Full invoice HTML output
   invoicePreview.innerHTML = `
-    <div class="mb-4">
-      <h3 class="text-lg font-bold">${senderNameInput.value || "Your Name"}</h3>
-      <p>${senderAddressInput.value || "Your Address"}</p>
-      <p>${senderPhoneInput.value || "Phone Number"}</p>
-      <p>${senderEmailInput.value || "Email"}</p>
+    <!-- Header Section -->
+    <div class="flex justify-between items-start mb-6 border-b pb-4">
+      <!-- Left: Invoice title + seller info -->
+      <div>
+        <h1 class="text-2xl font-bold mb-2">INVOICE</h1>
+        <p class="font-semibold">${senderNameInput.value || "Your Name / Company"}</p>
+        <p>${senderAddressInput.value || "Your Address"}</p>
+        <p>${senderEmailInput.value || "Email"}</p>
+        <p>${senderPhoneInput.value || "Phone"}</p>
+        <p>${senderVATInput.value || ""}</p>
+      </div>
+
+      <!-- Right: Logo placeholder + invoice info -->
+      <div class="text-right space-y-2">
+        <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto">
+          <span class="block text-center pt-6 text-sm text-gray-500">Logo</span>
+        </div>
+        <p><strong>Invoice #:</strong> ${invoiceNumberInput.value || "0001"}</p>
+        <p><strong>Invoice Date:</strong> ${invoiceDateInput.value || new Date().toISOString().split('T')[0]}</p>
+        <p><strong>Due Date:</strong> ${dueDateInput.value || "—"}</p>
+      </div>
     </div>
 
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold">Bill To:</h3>
-      <p>${clientNameInput.value || "Client Name"}</p>
-      <p>${clientAddressInput.value || "Client Address"}</p>
-    </div>
-
-    <div class="mb-4">
-      <p><strong>Invoice #:</strong> ${invoiceNumberInput.value || "0001"}</p>
-      <p><strong>Date:</strong> ${invoiceDateInput.value || new Date().toISOString().split('T')[0]}</p>
-    </div>
-
-    <hr class="my-4">
-
+    <!-- Item Table -->
     <table class="w-full text-sm mb-4">
       <thead>
         <tr class="border-b font-semibold text-left">
@@ -90,6 +108,7 @@ function updatePreview() {
       </tbody>
     </table>
 
+    <!-- Totals -->
     <p class="text-right font-semibold">Total Weight: ${totalWeight} kg</p>
     <p class="text-right font-bold text-lg">Grand Total: €${grandTotal.toFixed(2)}</p>
     <p class="text-right">VAT (${vatRate.toFixed(2)}%): €${vatAmount.toFixed(2)}</p>
@@ -97,11 +116,15 @@ function updatePreview() {
   `;
 }
 
+// ====== ITEM HANDLING ======
+
+// Get item container + button
 const itemsContainer = document.getElementById("itemsContainer");
 const addItemBtn = document.getElementById("addItemBtn");
 
 let itemCount = 0;
 
+// Add a new row of item inputs
 function addItemRow() {
   const row = document.createElement("div");
   row.className = "grid grid-cols-4 gap-2";
@@ -116,18 +139,21 @@ function addItemRow() {
   itemsContainer.appendChild(row);
   itemCount++;
 
-  // Add event listeners for live update
+  // Update preview on input
   row.querySelectorAll("input").forEach(input => {
     input.addEventListener("input", updatePreview);
   });
 
-  updatePreview(); // update immediately
+  updatePreview();
 }
 
-// Add one default item on load
+// First row on page load
 addItemBtn.addEventListener("click", addItemRow);
 addItemRow();
 
+// ====== PDF DOWNLOAD ======
+
+// Download PDF via html2pdf.js
 const downloadBtn = document.getElementById("downloadBtn");
 
 downloadBtn.addEventListener("click", () => {
@@ -141,4 +167,3 @@ downloadBtn.addEventListener("click", () => {
 
   html2pdf().from(invoicePreview).set(opt).save();
 });
-
