@@ -240,20 +240,30 @@ addItemRow();
 
 // Download PDF via html2pdf.js
 downloadBtn.addEventListener("click", async () => {
-  const clone = invoicePreview.cloneNode(true);
+  const clone   = invoicePreview.cloneNode(true);
 
-  const container = Object.assign(document.createElement("div"), {
-    style: `
-      position:fixed; top:-9999px; left:-9999px;
-      visibility:hidden; pointer-events:none;
-    `,
+  // Build off‑screen wrapper
+  const wrapper = document.createElement("div");
+  Object.assign(wrapper.style, {
+    position: "absolute",
+    top: "-9999px",
+    left: "-9999px",
+    padding: "32px",
+    backgroundColor: "white",
+    pointerEvents: "none",
+    overflow: "hidden",
   });
-  container.appendChild(clone);
-  document.body.appendChild(container);
+  wrapper.setAttribute("role", "presentation");
 
-  clone.style.maxWidth = "800px"; // ✅ constrain max width in print
+  // Match PDF width dynamically
+  const pageWidth = new jspdf.jsPDF({ unit: "px", format: "a4" }).internal.pageSize.getWidth();
+  wrapper.style.width = `${pageWidth}px`;
+
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
 
   try {
+    // Ensure assets loaded
     await document.fonts.ready;
     await Promise.all(
       [...clone.querySelectorAll("img")].map(img =>
@@ -262,17 +272,18 @@ downloadBtn.addEventListener("click", async () => {
     );
 
     const opt = {
-      margin: 0.5,
+      margin: 0,
       filename: `invoice-${invoiceNumberInput.value || "draft"}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+      jsPDF: { unit: "px", format: "a4", orientation: "portrait" },
     };
 
-    await html2pdf().set(opt).from(clone).save();
+    await html2pdf().set(opt).from(wrapper).save();
   } finally {
-    document.body.removeChild(container);
+    document.body.removeChild(wrapper);   // always clean up
   }
 });
+
 
 
