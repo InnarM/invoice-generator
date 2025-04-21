@@ -256,7 +256,9 @@ downloadBtn.addEventListener("click", async () => {
   wrapper.setAttribute("role", "presentation");
 
   // Match PDF width dynamically
-  const pageWidth = new jspdf.jsPDF({ unit: "px", format: "a4" }).internal.pageSize.getWidth();
+  
+  const pageWidth = 794; // A4 width in pixels at 96dpi (8.27in * 96)
+
   wrapper.style.width = `${pageWidth}px`;
 
   wrapper.appendChild(clone);
