@@ -239,23 +239,40 @@ addItemRow();
 // ====== PDF DOWNLOAD ======
 
 // Download PDF via html2pdf.js
-const downloadBtn = document.getElementById("downloadBtn");
-
-downloadBtn.addEventListener("click", () => {
-  // Clone the invoice preview to avoid layout/render issues
+downloadBtn.addEventListener("click", async () => {
   const clone = invoicePreview.cloneNode(true);
 
-  const opt = {
-    margin: 0.5,
-    filename: `invoice-${invoiceNumberInput.value || "draft"}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true, // supports loading local images or data URLs
-    },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
+  const container = Object.assign(document.createElement("div"), {
+    style: `
+      position:fixed; top:-9999px; left:-9999px;
+      visibility:hidden; pointer-events:none;
+    `,
+  });
+  container.appendChild(clone);
+  document.body.appendChild(container);
 
-  html2pdf().set(opt).from(clone).save();
+  clone.style.maxWidth = "800px"; // ✅ constrain max width in print
+
+  try {
+    await document.fonts.ready;
+    await Promise.all(
+      [...clone.querySelectorAll("img")].map(img =>
+        img.complete ? Promise.resolve() : img.decode().catch(() => {})
+      )
+    );
+
+    const opt = {
+      margin: 0.5,
+      filename: `invoice-${invoiceNumberInput.value || "draft"}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+
+    await html2pdf().set(opt).from(clone).save();
+  } finally {
+    document.body.removeChild(container);
+  }
 });
+
 
