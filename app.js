@@ -251,7 +251,8 @@ downloadBtn.addEventListener("click", async () => {
     padding: "32px",
     backgroundColor: "white",
     pointerEvents: "none",
-    visibility: "hidden",   //  hidden but still rendered
+    //visibility: "hidden",   //  hidden but still rendered
+    opacity: "0"         // invisible but still rendered
   });
   
   wrapper.setAttribute("role", "presentation");
