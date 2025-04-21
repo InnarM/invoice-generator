@@ -245,18 +245,19 @@ downloadBtn.addEventListener("click", async () => {
   // Build off‑screen wrapper
   const wrapper = document.createElement("div");
   Object.assign(wrapper.style, {
-    position: "absolute",
-    top: "-9999px",
-    left: "-9999px",
+    position: "fixed",      //  keeps it in the viewport
+    top: "0",
+    left: "0",
     padding: "32px",
     backgroundColor: "white",
     pointerEvents: "none",
-    overflow: "hidden",
+    visibility: "hidden",   //  hidden but still rendered
   });
+  
   wrapper.setAttribute("role", "presentation");
 
   // Match PDF width dynamically
-  
+
   const pageWidth = 794; // A4 width in pixels at 96dpi (8.27in * 96)
 
   wrapper.style.width = `${pageWidth}px`;
