@@ -8,7 +8,6 @@ const senderZipInput = document.getElementById("senderZip");
 const senderCountryInput = document.getElementById("senderCountry");
 const paymentTermsInput = document.getElementById("paymentTerms");
 
-
 // Sender (your) info
 const senderNameInput = document.getElementById("senderName");
 const senderAddressInput = document.getElementById("senderAddress");
@@ -18,7 +17,6 @@ const senderVATInput = document.getElementById("senderVAT");
 const vatRateInput = document.getElementById("vatRate");
 const logoInput = document.getElementById("logoInput");
 let logoDataUrl = ""; // Holds the uploaded logo image
-
 
 // Client info & invoice metadata
 const clientNameInput = document.getElementById("clientName");
@@ -82,8 +80,6 @@ logoInput.addEventListener("change", function () {
     updatePreview();
   }
 });
-
-
 
 // ====== MAIN RENDER FUNCTION ======
 
@@ -240,52 +236,58 @@ addItemRow();
 
 // Download PDF via html2pdf.js
 downloadBtn.addEventListener("click", async () => {
-  const clone   = invoicePreview.cloneNode(true);
-
-  // Build off‑screen wrapper
+  // Create a wrapper div with specific dimensions and styling
   const wrapper = document.createElement("div");
-  Object.assign(wrapper.style, {
-    position: "fixed",      //  keeps it in the viewport
-    top: "0",
-    left: "0",
-    padding: "32px",
-    backgroundColor: "white",
-    pointerEvents: "none",
-    //visibility: "hidden",   //  hidden but still rendered
-    opacity: "0"         // invisible but still rendered
-  });
+  wrapper.style.width = "794px"; // A4 width in pixels
+  wrapper.style.backgroundColor = "white";
+  wrapper.style.padding = "40px";
+  wrapper.style.position = "absolute";
+  wrapper.style.left = "-9999px"; // Move off-screen
   
-  wrapper.setAttribute("role", "presentation");
-
-  // Match PDF width dynamically
-
-  const pageWidth = 794; // A4 width in pixels at 96dpi (8.27in * 96)
-
-  wrapper.style.width = `${pageWidth}px`;
-
+  // Clone the invoice content
+  const clone = invoicePreview.cloneNode(true);
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
   try {
-    // Ensure assets loaded
+    // Wait for fonts and images to load
     await document.fonts.ready;
-    await Promise.all(
-      [...clone.querySelectorAll("img")].map(img =>
-        img.complete ? Promise.resolve() : img.decode().catch(() => {})
-      )
-    );
+    if (logoDataUrl) {
+      const logoImg = wrapper.querySelector("img");
+      if (logoImg) {
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.src = logoDataUrl;
+        });
+      }
+    }
 
     const opt = {
-      margin: 0,
+      margin: [0, 0, 0, 0],
       filename: `invoice-${invoiceNumberInput.value || "draft"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "px", format: "a4", orientation: "portrait" },
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        letterRendering: true
+      },
+      jsPDF: { 
+        unit: "px", 
+        format: "a4", 
+        orientation: "portrait",
+        compress: true
+      }
     };
 
+    // Generate and download the PDF
     await html2pdf().set(opt).from(wrapper).save();
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    alert("Failed to generate PDF. Please try again.");
   } finally {
-    document.body.removeChild(wrapper);   // always clean up
+    // Clean up
+    document.body.removeChild(wrapper);
   }
 });
 
