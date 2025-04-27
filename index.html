@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Invoice Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/src/style.css">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
   <div class="max-w-7xl mx-auto py-8 px-4">
@@ -79,10 +79,19 @@
           <h2 class="text-xl font-semibold mb-2">Tax</h2>
           <input type="number" placeholder="VAT %" class="w-full border p-2" id="vatRate" />
         </div>
+
+        <!-- Bank Details -->
+        <div>
+          <h2 class="text-xl font-semibold mb-2">Bank Details (footer)</h2>
+          <input id="bankName"    class="w-full border p-2 mb-1" placeholder="Bank name" />
+          <input id="bankAddr"    class="w-full border p-2 mb-1" placeholder="Bank address" />
+          <input id="bankIBAN"    class="w-full border p-2 mb-1" placeholder="IBAN" />
+          <input id="bankSwift"   class="w-full border p-2"      placeholder="BIC / SWIFT" />
+        </div>
       </div>
 
       <!-- RIGHT: Live Preview -->
-      <div class="flex flex-col bg-white shadow p-6 rounded border min-h-[400px]" id="preview-section">
+      <div class="flex flex-col p-6 rounded min-h-[400px]" id="preview-section">
         <h2 class="text-xl font-semibold mb-4">Invoice Preview</h2>
 
         <!-- This gets filled dynamically with JS -->
@@ -101,8 +110,7 @@
     </div>
   </div>
 
-  <!-- JS Logic -->
-  <script src="app.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- entry script -->
+  <script type="module" src="/src/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+
+@layer components{
+  .invoice-page{
+    display:flex;
+    flex-direction:column;
+    width:794px;              /* A4 @ 96 dpi */
+    min-height:1122px;        /* slightly shorter to prevent overflow */
+    box-sizing:border-box;    /* padding stays inside height */
+    padding:24px;
+    margin:0 auto;
+    background:#fff;
+    box-shadow:0 0 4px rgb(0 0 0 / .12);
+  }
+
+  /* ensure header & footer never split */
+  .invoice-header,
+  footer{
+    break-inside:avoid;
+  }
+}
+
+@media print {
+  /* start every invoice-page on a new sheet */
+  .invoice-page { page-break-after: always; }
+
+  /* but NOT after the very last invoice-page */
+  .invoice-page:last-child { page-break-after: avoid; }
+}
+
+@tailwind utilities;
+
+.invoice-header {
+  page-break-inside: avoid;
+}
